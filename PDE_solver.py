@@ -13,16 +13,16 @@ class CahnHilliard(object):
         self.build_matrices()
 
     def build_matrices(self):
-        self.phi = np.random.choice(a=[-1, 1], size=self.size)
+        self.phi = np.random.choice(a=[0, 1], size=self.size)
         self.mu = np.zeros(self.size)
     
-    def disc_laplacian(self, field, position):
-        i, j = position
-        lap_x = (field[self.pbc((i+1, j))] + field[self.pbc((i-1, j))]
-                - 2*field[(i, j)]) / self.dx**2
-        lap_y = (field[self.pbc((i, j+1))] + field[self.pbc((i, j-1))]
-                 - 2*field[(i, j)]) / self.dx**2
-        return(lap_x + lap_y)
+    def disc_laplacian(self, field, indices):
+        i, j = indices
+        laplacian_x = (field[self.pbc(
+            (i+1, j))] + field[self.pbc((i-1, j))] - 2 * field[i, j]) / self.dx**2
+        laplacian_y = (field[self.pbc(
+            (i, j+1))] + field[self.pbc((i, j-1))] - 2 * field[i, j]) / self.dx**2
+        return(laplacian_x + laplacian_y)
     
     def calc_mu(self, position):
         chemical_potential = (- self.a * self.phi[position]
@@ -34,19 +34,13 @@ class CahnHilliard(object):
     
     def euler_update(self, position):
         i, j = position
-        next_step = self.mu[i, j] + (self.mob*self.dt/self.dx**2)*(self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
-           + self.mu[self.pbc((i, j-1))] + self.mu[self.pbc((i, j+1))]
-           - 4 * self.mu[i, j]
-           )
-        return (next_step)
-    
-    def parallel_update(self, function):
-        new_state = np.zeros(self.size)
-        for i in range(self.size[0]):
-            for j in range(self.size[1]):
-                new_state[i, j] = function((i, j))
-        return(new_state)
-    
+        summation = (self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
+                  + self.mu[self.pbc((i, j-1))] + self.mu[self.pbc((i, j+1))]
+                  - 4 * self.mu[i, j]
+                  )
+        next_phi = self.phi[i, j] + (self.mob * self.dt / self.dx**2) * summation
+        return(next_phi)
+        
     def update_phi(self):
         new_state = np.zeros(self.size)
         for i in range(self.size[0]):
@@ -85,7 +79,8 @@ class CahnHilliard(object):
         """
         self.it_per_frame = it_per_frame
         self.figure = plt.figure()
-        self.image = plt.imshow(self.phi, cmap='jet', animated=True)
+        self.image = plt.imshow(self.phi, cmap='hot', animated=True)
         self.animation = animation.FuncAnimation(
             self.figure, self.animate, repeat=False, frames=iterations, interval=50, blit=True)
+        plt.colorbar()
         plt.show()
