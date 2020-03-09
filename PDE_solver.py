@@ -26,8 +26,8 @@ class CahnHilliard(object):
     
     def discrete_grad(self, field, position):
         i, j = position
-        grad_x = (field[self.pbc((i+1, j))] + field[self.pbc((i-1, j))]) / self.dx
-        grad_y = (field[self.pbc((i, j+1))] + field[self.pbc((i, j-1))]) / self.dx
+        grad_x = (field[self.pbc((i+1, j))] - field[self.pbc((i-1, j))]) / self.dx
+        grad_y = (field[self.pbc((i, j+1))] - field[self.pbc((i, j-1))]) / self.dx
         return (grad_x + grad_y)
 
     def calc_mu(self, position):
@@ -60,7 +60,8 @@ class CahnHilliard(object):
     
     def euler_update(self, position):
         i, j = position
-        summation = (self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
+        summation = (
+                  self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
                   + self.mu[self.pbc((i, j-1))] + self.mu[self.pbc((i, j+1))]
                   - 4 * self.mu[i, j]
                   )
@@ -109,4 +110,12 @@ class CahnHilliard(object):
         self.animation = animation.FuncAnimation(
             self.figure, self.animate, repeat=False, frames=iterations, interval=50, blit=True)
         plt.colorbar()
+        plt.show()
+    
+    def plot_fed(self, x_data, y_data):
+        plt.title('Free Energy vs. Time')
+        plt.ylabel('Free Energy [f]')
+        plt.xlabel('Time [s]')
+        plt.plot(x_data, y_data)
+        plt.savefig('plots/fed_plot.png')
         plt.show()
