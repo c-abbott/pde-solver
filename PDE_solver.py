@@ -13,24 +13,50 @@ class CahnHilliard(object):
         self.build_matrices()
 
     def build_matrices(self):
-        self.phi = np.random.choice(a=[0, 1], size=self.size)
+        self.phi = np.random.choice(a=[-1, 1], size=self.size)
         self.mu = np.zeros(self.size)
     
-    def disc_laplacian(self, field, indices):
-        i, j = indices
+    def discrete_laplacian(self, field, position):
+        i, j = position
         laplacian_x = (field[self.pbc(
             (i+1, j))] + field[self.pbc((i-1, j))] - 2 * field[i, j]) / self.dx**2
         laplacian_y = (field[self.pbc(
             (i, j+1))] + field[self.pbc((i, j-1))] - 2 * field[i, j]) / self.dx**2
-        return(laplacian_x + laplacian_y)
+        return (laplacian_x + laplacian_y)
     
+    def discrete_grad(self, field, position):
+        i, j = position
+        grad_x = (field[self.pbc((i+1, j))] + field[self.pbc((i-1, j))]) / self.dx
+        grad_y = (field[self.pbc((i, j+1))] + field[self.pbc((i, j-1))]) / self.dx
+        return (grad_x + grad_y)
+
     def calc_mu(self, position):
-        chemical_potential = (- self.a * self.phi[position]
-                              + self.a * self.phi[position]**3
-                              - self.kappa *
-                              self.disc_laplacian(self.phi, position)
-                              )
-        return (chemical_potential)
+        chem_pot = (
+                    - self.a * self.phi[position]
+                    + self.a * self.phi[position]**3
+                    - self.kappa * self.discrete_laplacian(self.phi, position)
+                    )
+        return (chem_pot)
+    
+    def calc_free_energy(self, position):
+        fed = (
+            - (self.a/2.0) * self.phi[position]**2 \
+            + (self.a/4.0) * self.phi[position]**4 \
+            + (self.kappa/2.0) * self.discrete_grad(self.phi, position)**2
+            )
+        return(fed)
+
+    #def calc_mu(self, position):
+    #    i, j = position
+    #    summation = (
+    #                self.phi[self.pbc((i+1, j))] + \
+    #                self.phi[self.pbc((i-1, j))] + \
+    #                self.phi[self.pbc((i, j+1))] + \
+    #                self.phi[self.pbc((i, j-1))] - 4 * self.phi[i, j]
+    #                )
+    #    mu = - self.a * self.phi[i, j] + self.a * (self.phi[i, j])**3 \
+    #        - (self.kappa / self.dx**2)*summation
+    #    return(mu)
     
     def euler_update(self, position):
         i, j = position
@@ -40,7 +66,7 @@ class CahnHilliard(object):
                   )
         next_phi = self.phi[i, j] + (self.mob * self.dt / self.dx**2) * summation
         return(next_phi)
-        
+
     def update_phi(self):
         new_state = np.zeros(self.size)
         for i in range(self.size[0]):
