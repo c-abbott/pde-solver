@@ -28,19 +28,21 @@ def main():
     ch_lattice = CahnHilliard(size = lattice_size, mobility = mob, a = a,
                               kappa = kappa, dx = dx, dt = dt)
     density_array = np.zeros(lattice_size)
-    time_array = np.zeros(iters)
+    time_vals = np.zeros(iters)
     density_vals = np.zeros(iters)
     for step in range(iters):
         print(step)
-        ch_lattice.update_cahn_hilliard()
         for j in range(ch_lattice.size[0]):
             for k in range(ch_lattice.size[1]):
                 density_array[j, k] = ch_lattice.calc_free_energy((j, k))
+        ch_lattice.update_cahn_hilliard()
         density_vals[step] = np.sum(density_array)
-        time_array[step] = step*dt
+        print(density_vals[step])
+        time_vals[step] = step*dt
     
-    ch_lattice.plot_fed(density_vals, time_array)
+    ch_lattice.plot_fed(time_vals, density_vals)
+
     # Writing to a file.
     with open("free_energy.dat", "w+") as f:
-        f.writelines(map("{}, {}\n".format, density_vals, time_array))
+        f.writelines(map("{}, {}\n".format, time_vals, density_vals))
 main()

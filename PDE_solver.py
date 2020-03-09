@@ -26,8 +26,8 @@ class CahnHilliard(object):
     
     def discrete_grad(self, field, position):
         i, j = position
-        grad_x = (field[self.pbc((i+1, j))] - field[self.pbc((i-1, j))]) / self.dx
-        grad_y = (field[self.pbc((i, j+1))] - field[self.pbc((i, j-1))]) / self.dx
+        grad_x = (field[self.pbc((i+1, j))] - field[self.pbc((i, j))]) / self.dx
+        grad_y = (field[self.pbc((i, j+1))] - field[self.pbc((i, j))]) / self.dx
         return (grad_x + grad_y)
 
     def calc_mu(self, position):
