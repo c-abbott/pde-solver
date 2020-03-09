@@ -7,7 +7,7 @@ class CahnHilliard(object):
         self.size = size
         self.mob = mobility
         self.a = a
-        self.kap = kappa
+        self.kappa = kappa
         self.dx = dx
         self.dt = dt
         self.build_matrices()
@@ -23,7 +23,24 @@ class CahnHilliard(object):
         lap_y = (field[self.pbc((i, j+1))] + field[self.pbc((i, j-1))]
                  - 2*field[(i, j)]) / self.dx**2
         return(lap_x + lap_y)
-
+    
+    def calc_mu(self, position):
+        chemical_potential = (- self.a * self.phi[position]
+                              + self.a * self.phi[position]**3
+                              - self.kappa *
+                              self.disc_laplacian(self.phi, position)
+                              )
+        return (chemical_potential)
+    
+    def euler_update(self, position):
+        i, j = position
+        next_step = self.mu[i, j] + (self.mob*self.dt/self.dx**2)
+        * (self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
+           + self.mu[self.pbc((i, j-1))] + self.mu[self.pbc((i, j+1))]
+           - 4 * self.mu[i, j]
+           )
+        return (next_step)
+   
     def pbc(self, indices):
         """
             Applies periodic boundary conditions (pbc) to a
