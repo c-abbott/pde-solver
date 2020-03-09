@@ -25,21 +25,27 @@ def main():
         dt= float(items[5])     # Temporal discretisation.
         iters = int(items[6])   # Time iterations.
     
+    # Create C-H lattice.
     ch_lattice = CahnHilliard(size = lattice_size, mobility = mob, a = a,
                               kappa = kappa, dx = dx, dt = dt)
+    # Data storage.
     density_array = np.zeros(lattice_size)
     time_vals = np.zeros(iters)
     density_vals = np.zeros(iters)
+    # Simulation begins.
     for step in range(iters):
         print(step)
+        # Calculating free energy density.
         for j in range(ch_lattice.size[0]):
             for k in range(ch_lattice.size[1]):
                 density_array[j, k] = ch_lattice.calc_free_energy((j, k))
+        # Progress time.
         ch_lattice.update_cahn_hilliard()
+        # Recording values.
         density_vals[step] = np.sum(density_array)
         print(density_vals[step])
         time_vals[step] = step*dt
-    
+    # Plotting.
     ch_lattice.plot_fed(time_vals, density_vals)
 
     # Writing to a file.
