@@ -1,3 +1,4 @@
-100, 0.1, 0.1, 0.1, 1.0, 0.1, 1000
-# Lattice Size, Mobility, a, kappa, dx, dt
-# Time Steps
+50, 0.1, 0.1, 0.1, 1.0, 1.0, 10000, 10, 0.1
+# Lattice Size, Mobility, a, kappa, dx, dt,
+# Sweeps, Equilibrium Sweeps, Measurement,
+# Initial Phi
