@@ -18,33 +18,39 @@ def main():
         items = line.split(", ")
         # Lattice size.
         lattice_size = (int(items[0]), int(items[0]))
-        mob = float(items[1])   # Mobility.
-        a = float(items[2])     # a.
-        kappa = float(items[3]) # kappa.
-        dx = float(items[4])    # Spatial discretisation.
-        dt= float(items[5])     # Temporal discretisation.
-        iters = int(items[6])   # Time iterations.
+        mob = float(items[1])       # Mobility.
+        a = float(items[2])         # a.
+        kappa = float(items[3])     # kappa.
+        dx = float(items[4])        # Spatial discretisation.
+        dt= float(items[5])         # Temporal discretisation.
+        sweeps = int(items[6])      # Time iterations.
+        n = int(items[7])           # nth sweep.
+        phi_0 = float(items[8])
+
     
     # Create C-H lattice.
-    ch_lattice = CahnHilliard(size = lattice_size, mobility = mob, a = a,
-                              kappa = kappa, dx = dx, dt = dt)
+    ch_lattice = CahnHilliard(size=lattice_size, mobility=mob, a=a,
+                              kappa=kappa, dx=dx, dt=dt, phi_0=phi_0)
     # Data storage.
     density_array = np.zeros(lattice_size)
-    time_vals = np.zeros(iters)
-    density_vals = np.zeros(iters)
+    time_vals = []
+    density_vals = []
+
     # Simulation begins.
-    for step in range(iters):
+    for step in range(sweeps):
         print(step)
-        # Calculating free energy density.
-        for j in range(ch_lattice.size[0]):
-            for k in range(ch_lattice.size[1]):
-                density_array[j, k] = ch_lattice.calc_free_energy((j, k))
+        # Calculating free energy density every nth sweep.
+        if step % n:
+            for j in range(ch_lattice.size[0]):
+                for k in range(ch_lattice.size[1]):
+                    density_array[j, k] = ch_lattice.calc_free_energy((j, k))
+            # Recording values.
+            density_vals.append(np.sum(density_array))
+            time_vals.append(step*dt*n)
+    
         # Progress time.
         ch_lattice.update_cahn_hilliard()
-        # Recording values.
-        density_vals[step] = np.sum(density_array)
-        print(density_vals[step])
-        time_vals[step] = step*dt
+
     # Plotting.
     ch_lattice.plot_fed(time_vals, density_vals)
 
