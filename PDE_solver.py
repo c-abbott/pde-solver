@@ -6,7 +6,7 @@ class CahnHilliard(object):
     """
         Cahn-Hilliard PDE class.
     """
-    def __init__(self, size, mobility, a, kappa, dx, dt):
+    def __init__(self, size, mobility, a, kappa, dx, dt, phi_0):
         # Simulation parameters.
         self.size = size
         self.mob = mobility
@@ -14,13 +14,14 @@ class CahnHilliard(object):
         self.kappa = kappa
         self.dx = dx
         self.dt = dt
-        self.build_matrices()
+        self.build_matrices(phi_0)
 
-    def build_matrices(self):
+    def build_matrices(self, phi_0):
         """
             Initial construction of scalar fields.
         """
-        self.phi = np.random.choice(a=[-1, 1], size=self.size)
+        self.phi = np.random.rand(
+            self.size[0], self.size[1]) * np.random.choice(a=[-1, 1], size=self.size) + phi_0
         self.mu = np.zeros(self.size)
     
     def discrete_laplacian(self, field, position):
@@ -35,17 +36,28 @@ class CahnHilliard(object):
         laplacian_y = (field[self.pbc((i, j+1))] + field[self.pbc((i, j-1))] \
                     - 2 * field[i, j]) / self.dx**2
         return (laplacian_x + laplacian_y)
-    
-    def discrete_grad(self, field, position):
+
+    def discrete_grad_x(self, field, position):
         """
             Returns the gradient of a scalar field at
             a given position. The gradient was
             discretised using Taylor's theorem.
         """
         i, j = position
-        grad_x = (field[self.pbc((i+1, j))] - field[self.pbc((i, j))]) / self.dx
-        grad_y = (field[self.pbc((i, j+1))] - field[self.pbc((i, j))]) / self.dx
-        return (grad_x + grad_y)
+        grad_x = (field[self.pbc((i+1, j))] -
+                  field[self.pbc((i-1, j))]) / 2 * self.dx
+        return (grad_x)
+    
+    def discrete_grad_y(self, field, position):
+        """
+            Returns the gradient of a scalar field at
+            a given position. The gradient was
+            discretised using Taylor's theorem.
+        """
+        i, j = position
+        grad_y = (field[self.pbc((i, j+1))] -
+                  field[self.pbc((i, j-1))]) / 2 * self.dx
+        return (grad_y)
 
     def calc_mu(self, position):
         """
@@ -65,25 +77,14 @@ class CahnHilliard(object):
             given a particular position.
         """
         # Free Energy Density.
-        fed = (
-            - (self.a/2.0) * self.phi[position]**2 \
+        grad_phi_sq = self.discrete_grad_x(
+            self.phi, position)**2 + self.discrete_grad_y(self.phi, position)**2
+        
+        fed = - (self.a/2.0) * self.phi[position]**2 \
             + (self.a/4.0) * self.phi[position]**4 \
-            + (self.kappa/2.0) * self.discrete_grad(self.phi, position)**2
-            )
+            + (self.kappa/2.0) * grad_phi_sq   
         return (fed)
 
-    #def calc_mu(self, position):
-    #    i, j = position
-    #    summation = (
-    #                self.phi[self.pbc((i+1, j))] + \
-    #                self.phi[self.pbc((i-1, j))] + \
-    #                self.phi[self.pbc((i, j+1))] + \
-    #                self.phi[self.pbc((i, j-1))] - 4 * self.phi[i, j]
-    #                )
-    #    mu = - self.a * self.phi[i, j] + self.a * (self.phi[i, j])**3 \
-    #        - (self.kappa / self.dx**2)*summation
-    #    return(mu)
-    
     def euler_update(self, position):
         """
             Updates the lhs of the Cahn-Hilliard PDE according
@@ -91,10 +92,10 @@ class CahnHilliard(object):
         """
         i, j = position
         summation = (
-                  self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
-                  + self.mu[self.pbc((i, j-1))] + self.mu[self.pbc((i, j+1))]
-                  - 4 * self.mu[i, j]
-                  )
+                    self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
+                    + self.mu[self.pbc((i, j-1))] + self.mu[self.pbc((i, j+1))]
+                    - 4 * self.mu[i, j]
+                    )
         next_phi = self.phi[i, j] + (self.mob * self.dt / self.dx**2) * summation
         return (next_phi)
 
@@ -147,9 +148,10 @@ class CahnHilliard(object):
         """
         self.it_per_frame = it_per_frame
         self.figure = plt.figure()
-        self.image = plt.imshow(self.phi, cmap='hot', animated=True)
+        self.image = plt.imshow(self.phi, cmap='seismic', animated=True)
         self.animation = animation.FuncAnimation(
-            self.figure, self.animate, repeat=False, frames=iterations, interval=50, blit=True)
+            self.figure, self.animate, repeat=False, frames=iterations, interval=20, blit=True)
+        plt.clim(-1, 1)
         plt.colorbar()
         plt.show()
     
