@@ -43,6 +43,12 @@ class CahnHilliard(object):
                   [0.0, 1.0, 0.0]]
         return (signal.convolve2d(field, kernel, boundary='wrap', mode='same'))
     
+    #def gradient_conv(self, field):
+    #    """
+    #        2D gradient using covolution method.
+    #    """
+    #    np.gradient()
+    
     def mu_convolve(self):
         """
             Calculating mu field.
@@ -70,6 +76,24 @@ class CahnHilliard(object):
         self.mu_convolve()
         self.phi_convolve()
 
+    def calc_free_energy(self):
+        """
+            Calculates the free energy density
+            for the whole lattice.
+        """
+        # Gradient Calculation.
+        grad = np.gradient(self.phi)
+        grad_x = grad[0]
+        grad_y = grad[1]
+
+        # Free Energy Density.
+        fed = (
+            - (self.a / 2.0) * self.phi**2 \
+            + (self.a / 4.0) * self.phi**4 \
+            + (self.kappa / 2.0) * (grad_x**2 + grad_y**2)
+        )
+        return (fed)
+
     def pbc(self, indices):
         """
             Applies periodic boundary conditions (pbc) to a
@@ -81,7 +105,7 @@ class CahnHilliard(object):
         """
             Run 100 sweeps of CH lattice.
         """
-        for s in range(100):
+        for run in range(100):
             self.phi_convolve()
 
     def animate(self, *args):
@@ -115,7 +139,7 @@ class CahnHilliard(object):
         """
         plt.title('Free Energy vs. Time')
         plt.ylabel('Free Energy [f]')
-        plt.xlabel('Time [s]')
+        plt.xlabel('Time [sweeps]')
         plt.plot(x_data, y_data)
         plt.savefig('plots/fed_plot.png')
         plt.show()
