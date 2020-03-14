@@ -129,7 +129,7 @@ class CahnHilliard(object):
         self.image = plt.imshow(self.phi, cmap='seismic', animated=True, interpolation='gaussian')
         self.animation = animation.FuncAnimation(
             self.figure, self.animate, repeat=False, frames=iterations, interval=20, blit=True)
-        plt.clim(-1, 1)
+        plt.clim(-1.1, 1.1)
         plt.colorbar()
         plt.show()
     
@@ -140,6 +140,6 @@ class CahnHilliard(object):
         plt.title('Free Energy vs. Time')
         plt.ylabel('Free Energy [f]')
         plt.xlabel('Time [sweeps]')
-        plt.plot(x_data, y_data)
+        plt.plot(x_data, y_data, color='tab:orange')
         plt.savefig('plots/fed_plot.png')
         plt.show()

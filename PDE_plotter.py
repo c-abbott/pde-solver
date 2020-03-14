@@ -27,12 +27,10 @@ def main():
         n = int(items[7])           # nth sweep.
         phi_0 = float(items[8])
 
-    
     # Create C-H lattice.
     ch_lattice = CahnHilliard(size=lattice_size, mobility=mob, a=a,
                               kappa=kappa, dx=dx, dt=dt, phi_0=phi_0)
     # Data storage.
-    #density_array = np.zeros(lattice_size)
     time_vals = []
     density_vals = []
 
@@ -46,13 +44,10 @@ def main():
             # Recording values.
             density_vals.append(np.sum(density_array))
             time_vals.append(step*dt)
-    
-        # Progress time.
+        # Evolve time.
         ch_lattice.update_cahn_hilliard()
-
     # Plotting.
     ch_lattice.plot_fed(time_vals, density_vals)
-
     # Writing to a file.
     with open("free_energy.dat", "w+") as f:
         f.writelines(map("{}, {}\n".format, time_vals, density_vals))
