@@ -23,22 +23,30 @@ class CahnHilliard(object):
 
     def construct_phi(self, phi_0):
         """
-            Initial construction of scalar phi.
+            Initial construction of scalar phi fields.
         """
         #self.phi = np.random.rand(
         #    self.size[0], self.size[1]) * np.random.choice(a=[-1, 1], size=self.size) + phi_0
+
+        # This initialisation is better for noise.
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 self.phi[i, j] = np.random.randint(-10, 11)/100.0 + phi_0
 
     
     def laplacian_conv(self, field):
+        """
+            2D Laplcian using convolution method.
+        """
         kernel = [[0.0, 1.0, 0.0],
                   [1.0, -4.0, 1.0],
                   [0.0, 1.0, 0.0]]
         return (signal.convolve2d(field, kernel, boundary='wrap', mode='same'))
     
     def mu_convolve(self):
+        """
+            Calculating mu field.
+        """
         chem_pot = (
             - self.a * self.phi
             + self.a * self.phi**3
@@ -47,6 +55,10 @@ class CahnHilliard(object):
         return (chem_pot)
     
     def phi_convolve(self):
+        """
+            Updating phi field for next time
+            step.
+        """
         self.phi = self.phi + \
             (self.mob * self.dt / (self.dx**2)) * \
             self.laplacian_conv(self.mu_convolve())
@@ -66,10 +78,17 @@ class CahnHilliard(object):
         return(indices[0] % self.size[0], indices[1] % self.size[1])
     
     def run_dynamics(self):
+        """
+            Run 100 sweeps of CH lattice.
+        """
         for s in range(100):
             self.phi_convolve()
 
     def animate(self, *args):
+        """
+            Animate wrapper function for FuncAnimate
+            object.
+        """
         #for i in range(self.it_per_frame):
         #    self.update_cahn_hilliard()
         self.run_dynamics()
