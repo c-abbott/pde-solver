@@ -32,21 +32,20 @@ def main():
     ch_lattice = CahnHilliard(size=lattice_size, mobility=mob, a=a,
                               kappa=kappa, dx=dx, dt=dt, phi_0=phi_0)
     # Data storage.
-    density_array = np.zeros(lattice_size)
+    #density_array = np.zeros(lattice_size)
     time_vals = []
     density_vals = []
 
     # Simulation begins.
     for step in range(sweeps):
         print(step)
-        # Calculating free energy density every nth sweep.
+        # Measure on nth sweep.
         if step % n:
-            for j in range(ch_lattice.size[0]):
-                for k in range(ch_lattice.size[1]):
-                    density_array[j, k] = ch_lattice.calc_free_energy((j, k))
+            # Calculate F.E.D.
+            density_array = ch_lattice.calc_free_energy()
             # Recording values.
             density_vals.append(np.sum(density_array))
-            time_vals.append(step*dt*n)
+            time_vals.append(step*dt)
     
         # Progress time.
         ch_lattice.update_cahn_hilliard()
