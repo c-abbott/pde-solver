@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from scipy import signal
 
 class CahnHilliard(object):
     """
@@ -14,119 +15,48 @@ class CahnHilliard(object):
         self.kappa = kappa
         self.dx = dx
         self.dt = dt
-        self.build_matrices(phi_0)
+        # Simulation fields.
+        self.phi = np.empty(self.size)
+        self.mu = np.empty(self.size)
+        # Initialise phi field.
+        self.construct_phi(phi_0)
 
-    def build_matrices(self, phi_0):
+    def construct_phi(self, phi_0):
         """
-            Initial construction of scalar fields.
+            Initial construction of scalar phi.
         """
-        self.phi = np.random.rand(
-            self.size[0], self.size[1]) * np.random.choice(a=[-1, 1], size=self.size) + phi_0
-        self.mu = np.zeros(self.size)
+        #self.phi = np.random.rand(
+        #    self.size[0], self.size[1]) * np.random.choice(a=[-1, 1], size=self.size) + phi_0
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                self.phi[i, j] = np.random.randint(-10, 11)/100.0 + phi_0
+
     
-    def discrete_laplacian(self, field, position):
-        """
-            Returns the Laplacian of a scalar field at
-            a given position. The Laplacian was
-            discretised using Taylor's theorem.
-        """
-        i, j = position
-        laplacian_x = (field[self.pbc((i+1, j))] + field[self.pbc((i-1, j))] \
-                    - 2 * field[i, j]) / self.dx**2
-        laplacian_y = (field[self.pbc((i, j+1))] + field[self.pbc((i, j-1))] \
-                    - 2 * field[i, j]) / self.dx**2
-        return (laplacian_x + laplacian_y)
-
-    def discrete_grad_x(self, field, position):
-        """
-            Returns the gradient of a scalar field at
-            a given position. The gradient was
-            discretised using Taylor's theorem.
-        """
-        i, j = position
-        grad_x = (field[self.pbc((i+1, j))] -
-                  field[self.pbc((i-1, j))]) / 2 * self.dx
-        return (grad_x)
+    def laplacian_conv(self, field):
+        kernel = [[0.0, 1.0, 0.0],
+                  [1.0, -4.0, 1.0],
+                  [0.0, 1.0, 0.0]]
+        return (signal.convolve2d(field, kernel, boundary='wrap', mode='same'))
     
-    def discrete_grad_y(self, field, position):
-        """
-            Returns the gradient of a scalar field at
-            a given position. The gradient was
-            discretised using Taylor's theorem.
-        """
-        i, j = position
-        grad_y = (field[self.pbc((i, j+1))] -
-                  field[self.pbc((i, j-1))]) / 2 * self.dx
-        return (grad_y)
-
-    def calc_mu(self, position):
-        """
-            Calculates the chemical potential
-            given a particular position.
-        """
+    def mu_convolve(self):
         chem_pot = (
-                    - self.a * self.phi[position]
-                    + self.a * self.phi[position]**3
-                    - self.kappa * self.discrete_laplacian(self.phi, position)
-                    )
+            - self.a * self.phi
+            + self.a * self.phi**3
+            - self.kappa * self.laplacian_conv(self.phi)
+        )
         return (chem_pot)
     
-    def calc_free_energy(self, position):
-        """
-            Calculates the free energy density 
-            given a particular position.
-        """
-        # Free Energy Density.
-        grad_phi_sq = self.discrete_grad_x(
-            self.phi, position)**2 + self.discrete_grad_y(self.phi, position)**2
-        
-        fed = - (self.a/2.0) * self.phi[position]**2 \
-            + (self.a/4.0) * self.phi[position]**4 \
-            + (self.kappa/2.0) * grad_phi_sq   
-        return (fed)
-
-    def euler_update(self, position):
-        """
-            Updates the lhs of the Cahn-Hilliard PDE according
-            to the forward Euler update scheme.
-        """
-        i, j = position
-        summation = (
-                    self.mu[self.pbc((i-1, j))] + self.mu[self.pbc((i+1, j))]
-                    + self.mu[self.pbc((i, j-1))] + self.mu[self.pbc((i, j+1))]
-                    - 4 * self.mu[i, j]
-                    )
-        next_phi = self.phi[i, j] + (self.mob * self.dt / self.dx**2) * summation
-        return (next_phi)
-
-    def update_phi(self):
-        """
-            Parallel updating scheme for phi
-            order parameter in CH PDE.
-        """
-        new_state = np.zeros(self.size)
-        for i in range(self.size[0]):
-            for j in range(self.size[1]):
-                new_state[i, j] = self.euler_update((i, j))
-        self.phi = new_state
-    
-    def update_mu(self):
-        """
-            Parallel updating scheme for the
-            chemical potential in CH PDE.
-        """
-        new_state = np.zeros(self.size)
-        for i in range(self.size[0]):
-            for j in range(self.size[1]):
-                new_state[i, j] = self.calc_mu((i, j))
-        self.mu = new_state
+    def phi_convolve(self):
+        self.phi = self.phi + \
+            (self.mob * self.dt / (self.dx**2)) * \
+            self.laplacian_conv(self.mu_convolve())
 
     def update_cahn_hilliard(self):
         """
             Update CH lattice.
         """
-        self.update_mu()
-        self.update_phi()
+        self.mu_convolve()
+        self.phi_convolve()
 
     def pbc(self, indices):
         """
@@ -135,9 +65,14 @@ class CahnHilliard(object):
         """
         return(indices[0] % self.size[0], indices[1] % self.size[1])
     
+    def run_dynamics(self):
+        for s in range(100):
+            self.phi_convolve()
+
     def animate(self, *args):
-        for i in range(self.it_per_frame):
-            self.update_cahn_hilliard()
+        #for i in range(self.it_per_frame):
+        #    self.update_cahn_hilliard()
+        self.run_dynamics()
         self.image.set_array(self.phi)
         return self.image,
     
@@ -148,7 +83,7 @@ class CahnHilliard(object):
         """
         self.it_per_frame = it_per_frame
         self.figure = plt.figure()
-        self.image = plt.imshow(self.phi, cmap='seismic', animated=True)
+        self.image = plt.imshow(self.phi, cmap='seismic', animated=True, interpolation='gaussian')
         self.animation = animation.FuncAnimation(
             self.figure, self.animate, repeat=False, frames=iterations, interval=20, blit=True)
         plt.clim(-1, 1)
