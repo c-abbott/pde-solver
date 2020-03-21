@@ -42,13 +42,7 @@ class CahnHilliard(object):
                   [1.0, -4.0, 1.0],
                   [0.0, 1.0, 0.0]]
         return (signal.convolve2d(field, kernel, boundary='wrap', mode='same'))
-    
-    #def gradient_conv(self, field):
-    #    """
-    #        2D gradient using covolution method.
-    #    """
-    #    np.gradient()
-    
+        
     def mu_convolve(self):
         """
             Calculating mu field.
