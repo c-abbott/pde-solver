@@ -143,29 +143,41 @@ class Poisson(object):
         A class to be utitilsed to solve
         Poisson's equation.
     """
-    def __init__(self, size, dx, dt, eps):
+    def __init__(self, size, dx, dt, eps, phi_0):
         # Simulation parameters.
         self.size = size
         self.dx = dx
         self.dt = dt
         self.eps = eps
-        self.build_fields()
+        self.build_fields(phi_0)
     
-    def build_fields(self):
-        # Initialise fields.
+    def build_fields(self, phi_0):
+        """
+            Initial construction of scalar fields.
+        """
         self.phi = np.zeros(self.size)
         self.rho = np.zeros(self.size)
-
         # Enforce Dirchlect BC on phi.
-        self.set_interior(self.phi)
+        self.set_boundary(self.phi, phi_0)
 
-    def set_interior(self, array):
+    def set_boundary(self, array, phi_0):
         """
-            A function which sets the interior of 
-            an n-dimensional array to one.
+            Method used to enforce Dirchlect BC
+            on cubic lattice.
         """
-        array[array.ndim * (slice(1, -1),)] = 1
-    
+        # Find Boundaries.
+        mask = np.ones(array.shape, dtype=bool)
+        mask[array.ndim * (slice(1, -1),)] = False
+        # Initialise phi with noise.
+        for i in range(self.size[0]):
+            for  j in range(self.size[1]):
+                for k in range(self.size[2]):
+                    if mask[i, j, k] == False:
+                        self.phi[i, j, k] = np.random.randint(-10, 11)/100.0 + phi_0
+                    # Dirchlect BC.
+                    else:
+                        self.phi[i, j, k] = 0
+
     def jacobi_update_phi(self, field):
         """
             Convolutional method to update 
