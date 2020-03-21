@@ -153,12 +153,18 @@ class Poisson(object):
     
     def build_fields(self):
         # Initialise fields.
-        self.phi = np.empty(self.size)
-        self.rho = np.empty(self.size)
+        self.phi = np.zeros(self.size)
+        self.rho = np.zeros(self.size)
+
         # Enforce Dirchlect BC on phi.
-        self.phi[:, :, self.size[0]-1] = 0.0
-        self.phi[:, :, 0] = 0.0
-        self.phi[0, 0, :] - 0.0
-        self.phi[self.size[0]-1, self.size[0]-1, :] = 0.0
+        self.set_interior(self.phi)
+
+    def set_interior(self, array):
+        """
+            A function which sets the interior of 
+            an n-dimensional array to one.
+        """
+        array[array.ndim * (slice(1, -1),)] = 1
+        
         
     
