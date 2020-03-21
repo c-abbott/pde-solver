@@ -165,6 +165,23 @@ class Poisson(object):
             an n-dimensional array to one.
         """
         array[array.ndim * (slice(1, -1),)] = 1
-        
-        
     
+    def jacobi_update_phi(self, field):
+        """
+            Convolutional method to update 
+            a scalar field.
+        """
+        # 3D kernel.
+        kernel = [[[0.0, 0.0, 0.0],
+                  [0.0, 1.0, 0.0],
+                  [0.0, 0.0, 0.0]],
+
+                  [[0.0, 1.0, 0.0],
+                  [1.0, 0.0, 1.0],
+                  [0.0, 1.0, 0.0]],
+
+                  [[0.0, 0.0, 0.0],
+                  [0.0, 1.0, 0.0],
+                  [0.0, 0.0, 0.0]]]
+        # Return jacobi update.
+        return ((signal.fftconvolve(field, kernel, mode='same') / 6.0) + self.rho)
