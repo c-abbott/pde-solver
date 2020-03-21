@@ -137,3 +137,28 @@ class CahnHilliard(object):
         plt.plot(x_data, y_data, color='tab:orange')
         plt.savefig('plots/fed_plot.png')
         plt.show()
+    
+class Poisson(object):
+    """
+        A class to be utitilsed to solve
+        Poisson's equation.
+    """
+    def __init__(self, size, dx, dt, eps):
+        # Simulation parameters.
+        self.size = size
+        self.dx = dx
+        self.dt = dt
+        self.eps = eps
+        self.build_fields()
+    
+    def build_fields(self):
+        # Initialise fields.
+        self.phi = np.empty(self.size)
+        self.rho = np.empty(self.size)
+        # Enforce Dirchlect BC on phi.
+        self.phi[:, :, self.size[0]-1] = 0.0
+        self.phi[:, :, 0] = 0.0
+        self.phi[0, 0, :] - 0.0
+        self.phi[self.size[0]-1, self.size[0]-1, :] = 0.0
+        
+    
