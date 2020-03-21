@@ -197,3 +197,11 @@ class Poisson(object):
                   [0.0, 0.0, 0.0]]]
         # Return jacobi update.
         return ((signal.fftconvolve(field, kernel, mode='same') / 6.0) + self.rho)
+
+    def get_elec_field(self):
+        """
+            Method returning the x, y, and z components
+            of the electric field seperately.
+        """
+        grad_x, grad_y, grad_z = -1 * np.gradient(self.phi)
+        return grad_x, grad_y, grad_z
