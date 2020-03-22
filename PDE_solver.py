@@ -211,8 +211,8 @@ class Poisson(object):
             Method returning the x, y, and z components
             of the electric field seperately.
         """
-        grad_x, grad_y, grad_z = -1 * np.gradient(self.phi)
-        return grad_x, grad_y, grad_z
+        E = np.gradient(self.phi)
+        return -1*np.array(E)[0], -1*np.array(E)[1], -1*np.array(E)[2]
     
     def convergence_check(self, val1, val2, tol):
         """
@@ -223,3 +223,28 @@ class Poisson(object):
             return True
         else:
             return False
+
+    def collect_data(self):
+        all_data = []
+        pot_data = []
+        vec_data = []
+
+        Ex, Ey, Ez = self.get_elec_field()
+
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                for k in range(self.size[2]):
+                    all_data.append(
+                        [i, j, k, self.phi[i, j, k], \
+                            Ex[i][j][k], Ey[i][j][k], Ez[i][j][k]])
+                    if k == (self.size[2] // 2.0):
+                        pot_data.append([i, j, self.phi[i,j,k]])
+                        vec_data.append([i, j, Ex[i][j][k], Ey[i][j][k]])
+
+        all_data = np.array(all_data)
+        pot_data = np.array(pot_data)
+        vec_data = np.array(vec_data)
+
+        np.savetxt('all_data.txt', all_data)
+        np.savetxt('pot_data.txt', pot_data)
+        np.savetxt('vec_data.txt', vec_data)
