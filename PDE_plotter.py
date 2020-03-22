@@ -28,7 +28,7 @@ def main():
 
         # Create C-H lattice.
         CH_Lattice = CahnHilliard(size=lattice_size, mobility=mob, a=a,
-                                kappa=kappa, dx=dx, dt=dt, phi_0=phi_0)
+                                    kappa=kappa, dx=dx, dt=dt, phi_0=phi_0)
         # Data storage.
         time_vals = []
         density_vals = []
@@ -44,7 +44,7 @@ def main():
                 density_vals.append(np.sum(density_array))
                 time_vals.append(step*dt)
             # Evolve time.
-            CH_Lattice.update_cahn_hilliard()
+            CH_Lattice.update_phi()
         # Plotting.
         CH_Lattice.plot_fed(time_vals, density_vals)
         # Writing to a file.

@@ -34,7 +34,7 @@ class CahnHilliard(object):
                 self.phi[i, j] = np.random.randint(-10, 11)/100.0 + phi_0
 
     
-    def laplacian_conv(self, field):
+    def laplacian(self, field):
         """
             2D Laplcian using convolution method.
         """
@@ -43,25 +43,25 @@ class CahnHilliard(object):
                   [0.0, 1.0, 0.0]]
         return (signal.convolve2d(field, kernel, boundary='wrap', mode='same'))
         
-    def mu_convolve(self):
+    def get_mu(self):
         """
             Calculating mu field.
         """
         chem_pot = (
             - self.a * self.phi
             + self.a * self.phi**3
-            - self.kappa * self.laplacian_conv(self.phi)
+            - self.kappa * self.laplacian(self.phi)
         )
         return (chem_pot)
     
-    def phi_convolve(self):
+    def update_phi(self):
         """
             Updating phi field for next time
             step.
         """
         self.phi = self.phi + \
             (self.mob * self.dt / (self.dx**2)) * \
-            self.laplacian_conv(self.mu_convolve())
+            self.laplacian(self.get_mu())
 
     def calc_free_energy(self):
         """
@@ -91,7 +91,7 @@ class CahnHilliard(object):
             Run 100 sweeps of CH lattice.
         """
         for _ in range(100):
-            self.phi_convolve()
+            self.update_phi()
 
     def animate(self, *args):
         """
