@@ -16,8 +16,8 @@ class CahnHilliard(object):
         self.dx = dx
         self.dt = dt
         # Simulation fields.
-        self.phi = np.empty(self.size)
-        self.mu = np.empty(self.size)
+        self.phi = np.zeros(self.size)
+        self.mu = np.zeros(self.size)
         # Initialise phi field.
         self.construct_phi(phi_0)
 
@@ -63,13 +63,6 @@ class CahnHilliard(object):
             (self.mob * self.dt / (self.dx**2)) * \
             self.laplacian_conv(self.mu_convolve())
 
-    def update_cahn_hilliard(self):
-        """
-            Update CH lattice.
-        """
-        self.mu_convolve()
-        self.phi_convolve()
-
     def calc_free_energy(self):
         """
             Calculates the free energy density
@@ -77,14 +70,12 @@ class CahnHilliard(object):
         """
         # Gradient Calculation.
         grad = np.gradient(self.phi)
-        grad_x = grad[0]
-        grad_y = grad[1]
-
+      
         # Free Energy Density.
         fed = (
             - (self.a / 2.0) * self.phi**2 \
             + (self.a / 4.0) * self.phi**4 \
-            + (self.kappa / 2.0) * (grad_x**2 + grad_y**2)
+            + (self.kappa / 2.0) * (grad[0]**2 + grad[1]**2)
         )
         return (fed)
 
@@ -99,7 +90,7 @@ class CahnHilliard(object):
         """
             Run 100 sweeps of CH lattice.
         """
-        for run in range(100):
+        for _ in range(100):
             self.phi_convolve()
 
     def animate(self, *args):
