@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import sys
 from PDE_solver import CahnHilliard
 from PDE_solver import Poisson
+import time
 
 def main():
     # Cahn-Hilliard free energy plot.
@@ -67,10 +68,13 @@ def main():
         # Create Poisson lattice.
         Lattice = Poisson(
             size=cubic_size, dx=dx, dt=dt, eps=eps, phi_0=phi_0)
+        # Create monopole.
         Lattice.create_monopole()
-
+        # Condition for while loop.
         condition = False
-        
+        # Timer.
+        tic = time.perf_counter()
+        # Simulation begins.
         while condition == False:
             # Store previous state.
             state = np.array(Lattice.phi)
@@ -78,11 +82,9 @@ def main():
             Lattice.phi = Lattice.jacobi_update_phi(Lattice.phi)
             # Check for convegence.
             condition = Lattice.convergence_check(state, Lattice.phi, tol)
-
-
-        
-
-
-        
-
+        # Collect data.
+        Lattice.collect_data()
+        # Timer.
+        toc = time.perf_counter()
+        print("Executed script in {} seconds.".format(toc-tic))
 main()
