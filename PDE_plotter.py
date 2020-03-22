@@ -31,7 +31,7 @@ def main():
         # Data storage.
         time_vals = []
         density_vals = []
-        
+
         # Simulation begins.
         for step in range(sweeps):
             print(step)
@@ -50,7 +50,7 @@ def main():
         with open("free_energy.dat", "w+") as f:
             f.writelines(map("{}, {}\n".format, time_vals, density_vals))
 
-    if sys.argv[1] == "poisson":
+    if sys.argv[1] == "monopole":
         infile_parameters = sys.argv[2]
         # Open input file and assinging parameters.
         with open(infile_parameters, "r") as input_file:
@@ -60,14 +60,27 @@ def main():
             cubic_size = (int(items[0]), int(items[0]), int(items[0]))
             dx = float(items[1])        # Spatial discretisation.
             dt = float(items[2])        # Temporal discretisation.
-            sweeps = int(items[3])      # Time iterations.
-            n = int(items[4])           # nth sweep.
-            eps = float(items[5])       # set epsilon to one.
-            phi_0 = float(items[6])     # Initial phi value.
+            eps = float(items[3])       # Set epsilon to one.
+            phi_0 = float(items[4])     # Initial phi value.
+            tol = float(items[5])       # Jacobi convegence tolerance.
         
-        Poisson_Cube = Poisson(
+        # Create Poisson lattice.
+        Lattice = Poisson(
             size=cubic_size, dx=dx, dt=dt, eps=eps, phi_0=phi_0)
-        print (Poisson_Cube.phi)
+        Lattice.create_monopole()
+
+        condition = False
+        
+        while condition == False:
+            # Store previous state.
+            state = np.array(Lattice.phi)
+            # Update state.
+            Lattice.phi = Lattice.jacobi_update_phi(Lattice.phi)
+            # Check for convegence.
+            condition = Lattice.convergence_check(state, Lattice.phi, tol)
+
+
+        
 
 
         

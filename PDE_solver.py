@@ -155,10 +155,18 @@ class Poisson(object):
         """
             Initial construction of scalar fields.
         """
-        self.phi = np.zeros(self.size)
-        self.rho = np.zeros(self.size)
+        self.phi = np.zeros(self.size, dtype=float)
+        self.rho = np.zeros(self.size, dtype=float)
         # Enforce Dirchlect BC on phi.
         self.set_boundary(self.phi, phi_0)
+    
+    def create_monopole(self):
+        """
+            Create monopole at centre of n-dim
+            cubic lattice.
+        """
+        self.rho[self.rho.shape[0]//2,
+                 self.rho.shape[1]//2, self.rho.shape[2]//2] = 1.0
 
     def set_boundary(self, array, phi_0):
         """
@@ -185,16 +193,16 @@ class Poisson(object):
         """
         # 3D kernel.
         kernel = [[[0.0, 0.0, 0.0],
-                  [0.0, 1.0, 0.0],
-                  [0.0, 0.0, 0.0]],
+                   [0.0, 1.0, 0.0],
+                   [0.0, 0.0, 0.0]],
 
                   [[0.0, 1.0, 0.0],
-                  [1.0, 0.0, 1.0],
-                  [0.0, 1.0, 0.0]],
+                   [1.0, 0.0, 1.0],
+                   [0.0, 1.0, 0.0]],
 
                   [[0.0, 0.0, 0.0],
-                  [0.0, 1.0, 0.0],
-                  [0.0, 0.0, 0.0]]]
+                   [0.0, 1.0, 0.0],
+                   [0.0, 0.0, 0.0]]]
         # Return jacobi update.
         return ((signal.fftconvolve(field, kernel, mode='same') / 6.0) + self.rho)
 
@@ -205,3 +213,13 @@ class Poisson(object):
         """
         grad_x, grad_y, grad_z = -1 * np.gradient(self.phi)
         return grad_x, grad_y, grad_z
+    
+    def convergence_check(self, val1, val2, tol):
+        """
+            Jacobi algorithm convegence check.
+        """ 
+        diff = val2 - val1
+        if np.all(diff <= tol):
+            return True
+        else:
+            return False
