@@ -180,7 +180,8 @@ class Poisson(object):
     def jacobi_update_phi(self, field):
         """
             Convolutional method to update 
-            a scalar field.
+            a scalar field using Jacobi
+            algorithm.
         """
         # 3D kernel.
         kernel = [[[0.0, 0.0, 0.0],
@@ -195,7 +196,17 @@ class Poisson(object):
                    [0.0, 1.0, 0.0],
                    [0.0, 0.0, 0.0]]]
         # Return jacobi update.
-        return ((signal.fftconvolve(field, kernel, mode='same') / 6.0) + self.rho)
+        return ((signal.fftconvolve(field, kernel, mode='same')  + self.rho)/ 6.0)
+
+    #def gs_update_phi(self, field):
+    #    """
+    #        Convolutional method to update 
+    #        a scalar field using Gauss-Seidel
+    #        algorithm.
+    #    """
+
+
+
 
     def get_elec_field(self):
         """
@@ -205,17 +216,22 @@ class Poisson(object):
         E = np.gradient(self.phi)
         return -1*np.array(E)[0], -1*np.array(E)[1], -1*np.array(E)[2]
     
-    def convergence_check(self, val1, val2, tol):
+    def convergence_check(self, arr1, arr2, tol):
         """
             Jacobi algorithm convegence check.
         """ 
-        diff = val2 - val1
-        if np.all(diff <= tol):
+        diff = abs(arr2 - arr1)
+        print(np.sum)
+        if np.sum(diff, axis=None) <= tol:
             return True
         else:
             return False
 
     def collect_data(self):
+        """
+            Data collection method for potential contour
+            and electric field quiver plots.
+        """
         all_data = []
         pot_data = []
         vec_data = []
