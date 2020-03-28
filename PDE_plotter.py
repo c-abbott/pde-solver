@@ -86,7 +86,8 @@ def main():
                 # Check for convegence.
                 converged = Lattice.convergence_check(state, Lattice.phi, tol)
             # Collect data.
-            Lattice.collect_data()
+            Lattice.collect_data(
+                ['jacobi_all_data.txt', 'jacobi_pot_data.txt', 'jacobi_vec_data.txt'])
             # Timer.
             toc = time.perf_counter()
             print("Executed script in {} seconds.".format(toc-tic))
@@ -104,11 +105,12 @@ def main():
                 # Store previous state.
                 state = np.array(Lattice.phi)
                 # Update state.
-                Lattice.phi = Lattice.gs_update_phi(Lattice.phi)
+                Lattice.gs_update_phi(Lattice.phi)
                 # Check for convergence.
                 converged = Lattice.convergence_check(state, Lattice.phi, tol)
             # Collect data
-            Lattice.collect_data()
+            Lattice.collect_data(
+                ['gs_all_data.txt', 'gs_pot_data.txt', 'gs_vec_data.txt'])
             # Timer.
             toc = time.perf_counter()
             print("Executed script in {} seconds.".format(toc-tic))

@@ -232,7 +232,7 @@ class Poisson(object):
         else:
             return False
 
-    def collect_data(self):
+    def collect_data(self, filenames):
         """
             Data collection method for potential contour
             and electric field quiver plots.
@@ -257,6 +257,6 @@ class Poisson(object):
         pot_data = np.array(pot_data)
         vec_data = np.array(vec_data)
 
-        np.savetxt('all_data.txt', all_data)
-        np.savetxt('pot_data.txt', pot_data)
-        np.savetxt('vec_data.txt', vec_data)
+        np.savetxt(str(filenames[0]), all_data)
+        np.savetxt(str(filenames[1]), pot_data)
+        np.savetxt(str(filenames[2]), vec_data)
