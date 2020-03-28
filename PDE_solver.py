@@ -135,7 +135,7 @@ class Poisson(object):
         A class to be utitilsed to solve
         Poisson's equation.
     """
-    def __init__(self, size, dx, dt, eps, phi_0, alg):
+    def __init__(self, size, dx, dt, eps, phi_0, alg, omega):
         # Simulation parameters.
         self.size = size
         self.dx = dx
@@ -143,6 +143,7 @@ class Poisson(object):
         self.eps = eps
         self.build_fields(phi_0)
         self.alg = alg
+        self.omega = omega
     
     def build_fields(self, phi_0):
         """
@@ -160,7 +161,7 @@ class Poisson(object):
         """
         self.rho[self.rho.shape[0]//2,
                  self.rho.shape[1]//2, self.rho.shape[2]//2] = 1.0
-
+    
     def set_boundary(self, array, phi_0):
         """
             Method used to enforce Dirchlect BC
@@ -186,7 +187,7 @@ class Poisson(object):
         """
         return(indices[0] % self.size[0], indices[1] % self.size[1])
 
-    def jacobi_update_phi(self, field):
+    def jacobi_update(self, field):
         """
             Convolutional method to update 
             a scalar field using Jacobi
@@ -207,19 +208,20 @@ class Poisson(object):
         # Return jacobi update.
         return ((signal.fftconvolve(field, kernel, mode='same')  + self.rho)/ 6.0)
 
-    def gs_update_phi(self, field):
+    def gs_update_3D(self, field):
         """
-            Gauss-Seidel algorithm for updating
-            a scalar field. Boundaries not touched
-            as Dirchlect BC in place.
+            3D Gauss-Seidel algorithm with successive
+            over relaxation for updating a scalar field. 
+            Boundaries not touched as Dirchlect BC in place.
         """
         for i in range(1, self.size[0] - 1):
             for j in range(1, self.size[1] - 1):
                 for k in range(1, self.size[2] - 1):
-                    self.phi[i][j][k] = 1./6. * (self.phi[i+1][j][k] + self.phi[i-1][j][k] +
-                                                 self.phi[i][j+1][k] + self.phi[i][j-1][k] +
-                                                 self.phi[i][j][k+1] + self.phi[i][j][k-1] +
-                                                 self.rho[i][j][k])
+                    self.phi[i][j][k] = 1./6. * (self.phi[i+1][j][k] + self.phi[i-1][j][k] + \
+                                                 self.phi[i][j+1][k] + self.phi[i][j-1][k] + \
+                                                 self.phi[i][j][k+1] + self.phi[i][j][k-1] + \
+                                                 self.rho[i][j][k]) * self.omega + (1 - self.omega) * \
+                                                 self.phi[i][j][k]
 
     def get_elec_field(self):
         """
@@ -234,7 +236,6 @@ class Poisson(object):
             Jacobi algorithm convegence check.
         """ 
         diff = abs(arr2 - arr1)
-        print(np.sum)
         if np.sum(diff, axis=None) <= tol:
             return True
         else:
@@ -282,3 +283,82 @@ class Poisson(object):
         np.savetxt(str(filenames[1]), pot_data)
         np.savetxt(str(filenames[2]), vec_data)
         np.savetxt(str(filenames[3]), dist_data)
+
+class Poisson2D(object):
+    """
+        A class to be utitilsed to solve
+        Poisson's equation in 2D.
+    """
+    def __init__(self, size, dx, dt, eps, phi_0, alg, omega):
+        # Simulation parameters.
+        self.size = size
+        self.dx = dx
+        self.dt = dt
+        self.eps = eps
+        self.build_fields2D(phi_0)
+        self.alg = alg
+        self.omega = omega
+    
+    def build_fields2D(self, phi_0):
+        """
+            Initial construction of scalar fields.
+        """
+        self.phi = np.zeros(self.size, dtype=float)
+        self.rho = np.zeros(self.size, dtype=float)
+        # Enforce Dirchlect BC on phi.
+        self.set_boundary2D(self.phi, phi_0)
+    
+    def create_monopole_2D(self):
+        """
+            Create monopole at centre of n-dim
+            cubic lattice.
+        """
+        self.rho[self.rho.shape[0]//2, self.rho.shape[1]//2] = 1.0
+    
+    def set_boundary2D(self, array, phi_0):
+        """
+            Method used to enforce Dirchlect BC
+            on cubic lattice.
+        """
+        # Find Boundaries.
+        mask = np.ones(array.shape, dtype=bool)
+        mask[array.ndim * (slice(1, -1),)] = False
+        # Initialise phi with noise.
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                if mask[i, j] == False:
+                    self.phi[i, j] = np.random.randint(-10, 11)/100.0 + phi_0
+                    # Dirchlect BC.
+                else:
+                    self.phi[i, j] = 0
+    
+    def gs_update_2D(self, field):
+        """
+            2D Gauss-Seidel algorithm with successive
+            over relaxation for updating a scalar field. 
+            Boundaries not touched as Dirchlect BC in place.
+        """
+        for i in range(1, self.size[0] - 1):
+            for j in range(1, self.size[1] - 1):
+                self.phi[i][j] = 1./4. * (self.phi[i+1][j] + self.phi[i-1][j] +
+                                          self.phi[i][j+1] + self.phi[i][j-1] +
+                                          self.rho[i][j]) * self.omega + (1 - self.omega) * \
+                                          self.phi[i][j]
+
+    def convergence_check2D(self, arr1, arr2, tol):
+        """
+            Jacobi/GS algorithm convegence check.
+        """
+        diff = abs(arr2 - arr1)
+        if np.sum(diff, axis=None) <= tol:
+            return True
+        else:
+            return False
+
+    def write_omega_file(self, sweeps, omegas, filename):
+        """
+            File writer.
+        """
+        with open(str(filename), "w+") as f:
+            f.writelines(map("{}, {}\n".format,
+                             omegas, sweeps))
