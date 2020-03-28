@@ -151,7 +151,7 @@ class Poisson(object):
         self.rho = np.zeros(self.size, dtype=float)
         # Enforce Dirchlect BC on phi.
         self.set_boundary(self.phi, phi_0)
-    
+
     def create_monopole(self):
         """
             Create monopole at centre of n-dim
@@ -204,10 +204,14 @@ class Poisson(object):
             Gauss-Seidel algorithm for updating
             a scalar field.
         """
-
-
-
-
+        for i in range(1, self.size[0] - 1):
+            for j in range(1, self.size[1] - 1):
+                for k in range(1, self.size[2] - 1):
+                    self.phi[i][j][k] = 1./6. * (self.phi[i+1][j][k] + self.phi[i-1][j][k] +
+                                                 self.phi[i][j+1][k] + self.phi[i][j-1][k] +
+                                                 self.phi[i][j][k+1] + self.phi[i][j][k-1] +
+                                                 self.rho[i][j][k])
+                                                 
     def get_elec_field(self):
         """
             Method returning the x, y, and z components
