@@ -202,7 +202,8 @@ class Poisson(object):
     def gs_update_phi(self, field):
         """
             Gauss-Seidel algorithm for updating
-            a scalar field.
+            a scalar field. Boundaries not touched
+            as Dirchlect BC in place.
         """
         for i in range(1, self.size[0] - 1):
             for j in range(1, self.size[1] - 1):
@@ -211,7 +212,7 @@ class Poisson(object):
                                                  self.phi[i][j+1][k] + self.phi[i][j-1][k] +
                                                  self.phi[i][j][k+1] + self.phi[i][j][k-1] +
                                                  self.rho[i][j][k])
-                                                 
+
     def get_elec_field(self):
         """
             Method returning the x, y, and z components
