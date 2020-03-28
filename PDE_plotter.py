@@ -64,27 +64,52 @@ def main():
             eps = float(items[3])       # Set epsilon to one.
             phi_0 = float(items[4])     # Initial phi value.
             tol = float(items[5])       # Jacobi convegence tolerance.
+            alg = str(items[6])
         
         # Create Poisson lattice.
         Lattice = Poisson(
-            size=cubic_size, dx=dx, dt=dt, eps=eps, phi_0=phi_0)
-        # Create monopole.
-        Lattice.create_monopole()
-        # Condition for while loop.
-        condition = False
-        # Timer.
-        tic = time.perf_counter()
-        # Simulation begins.
-        while condition == False:
-            # Store previous state.
-            state = np.array(Lattice.phi)
-            # Update state.
-            Lattice.phi = Lattice.jacobi_update_phi(Lattice.phi)
-            # Check for convegence.
-            condition = Lattice.convergence_check(state, Lattice.phi, tol)
-        # Collect data.
-        Lattice.collect_data()
-        # Timer.
-        toc = time.perf_counter()
-        print("Executed script in {} seconds.".format(toc-tic))
+            size=cubic_size, dx=dx, dt=dt, eps=eps, phi_0=phi_0, alg=alg)
+        # Implement Jacobi algorithm.
+        if Lattice.alg == 'jacobi':
+            # Create monopole.
+            Lattice.create_monopole()
+            # Condition for while loop.
+            converged = False
+            # Timer.
+            tic = time.perf_counter()
+            # Simulation begins.
+            while not converged:
+                # Store previous state.
+                state = np.array(Lattice.phi)
+                # Update state.
+                Lattice.phi = Lattice.jacobi_update_phi(Lattice.phi)
+                # Check for convegence.
+                converged = Lattice.convergence_check(state, Lattice.phi, tol)
+            # Collect data.
+            Lattice.collect_data()
+            # Timer.
+            toc = time.perf_counter()
+            print("Executed script in {} seconds.".format(toc-tic))
+
+        # Implement Gauss-Seidel algorithm.
+        elif Lattice.alg == 'gs':
+            # Create monopole.
+            Lattice.create_monopole
+            # Condition for while loop.
+            converged = False
+            # Timer.
+            tic = time.perf_counter()
+            # Simulation begins.
+            while not converged:
+                # Store previous state.
+                state = np.array(Lattice.phi)
+                # Update state.
+                Lattice.phi = Lattice.gs_update_phi(Lattice.phi)
+                # Check for convergence.
+                converged = Lattice.convergence_check(state, Lattice.phi, tol)
+            # Collect data
+            Lattice.collect_data()
+            # Timer.
+            toc = time.perf_counter()
+            print("Executed script in {} seconds.".format(toc-tic))
 main()
