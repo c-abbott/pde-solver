@@ -110,7 +110,7 @@ def main():
                 converged = Lattice.convergence_check(state, Lattice.phi, tol)
             # Collect data
             Lattice.collect_data(
-                ['gs_all_data.txt', 'gs_pot_data.txt', 'gs_vec_data.txt'])
+                    ['gs_all_data.txt', 'gs_pot_data.txt', 'gs_vec_data.txt'])
             # Timer.
             toc = time.perf_counter()
             print("Executed script in {} seconds.".format(toc-tic))
