@@ -134,13 +134,14 @@ class Poisson(object):
         A class to be utitilsed to solve
         Poisson's equation.
     """
-    def __init__(self, size, dx, dt, eps, phi_0):
+    def __init__(self, size, dx, dt, eps, phi_0, alg):
         # Simulation parameters.
         self.size = size
         self.dx = dx
         self.dt = dt
         self.eps = eps
         self.build_fields(phi_0)
+        self.alg = alg
     
     def build_fields(self, phi_0):
         """
@@ -198,12 +199,11 @@ class Poisson(object):
         # Return jacobi update.
         return ((signal.fftconvolve(field, kernel, mode='same')  + self.rho)/ 6.0)
 
-    #def gs_update_phi(self, field):
-    #    """
-    #        Convolutional method to update 
-    #        a scalar field using Gauss-Seidel
-    #        algorithm.
-    #    """
+    def gs_update_phi(self, field):
+        """
+            Gauss-Seidel algorithm for updating
+            a scalar field.
+        """
 
 
 
