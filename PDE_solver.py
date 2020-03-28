@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import math
 from scipy import signal
 
 class CahnHilliard(object):
@@ -177,6 +178,13 @@ class Poisson(object):
                     # Dirchlect BC.
                     else:
                         self.phi[i, j, k] = 0
+    
+    def pbc(self, indices):
+        """
+            Applies periodic boundary conditions (pbc) to a
+            2D lattice.
+        """
+        return(indices[0] % self.size[0], indices[1] % self.size[1])
 
     def jacobi_update_phi(self, field):
         """
@@ -231,6 +239,15 @@ class Poisson(object):
             return True
         else:
             return False
+    
+    def calc_radial_dist(self, indices):
+        """
+            Calculates the distance from the centre
+            of a 2D lattice with periodic boundary 
+            conditions.
+        """
+        i, j = self.pbc(indices)
+        return (math.sqrt((i + self.size[0] // 2)**2 + (j + self.size[1]//2)**2))
 
     def collect_data(self, filenames):
         """
@@ -240,6 +257,7 @@ class Poisson(object):
         all_data = []
         pot_data = []
         vec_data = []
+        dist_data = []
 
         Ex, Ey, Ez = self.get_elec_field()
 
@@ -250,13 +268,17 @@ class Poisson(object):
                         [i, j, k, self.phi[i, j, k], \
                             Ex[i][j][k], Ey[i][j][k], Ez[i][j][k]])
                     if k == (self.size[2] // 2.0):
-                        pot_data.append([i, j, self.phi[i,j,k]])
+                        pot_data.append([i, j, self.phi[i][j][k]])
                         vec_data.append([i, j, Ex[i][j][k], Ey[i][j][k]])
+                        dist_data.append([self.calc_radial_dist((i, j)), self.phi[i][j][k], math.sqrt(
+                            (Ex[i][j][k])**2+(Ey[i][j][k])**2+(Ez[i][j][k])**2)])
 
         all_data = np.array(all_data)
         pot_data = np.array(pot_data)
         vec_data = np.array(vec_data)
+        dist_data = np.array(dist_data)
 
         np.savetxt(str(filenames[0]), all_data)
         np.savetxt(str(filenames[1]), pot_data)
         np.savetxt(str(filenames[2]), vec_data)
+        np.savetxt(str(filenames[3]), dist_data)
