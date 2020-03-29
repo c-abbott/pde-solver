@@ -418,7 +418,7 @@ class Maxwell(object):
                    [0.0, 1.0, 0.0],
                    [0.0, 0.0, 0.0]]]
         # Return jacobi update.
-        return ((signal.fftconvolve(field, kernel, mode='same') + self.A) / 6.0)
+        return ((signal.fftconvolve(field, kernel, mode='same') + self.J) / 6.0)
 
     def get_mag_field(self):
         """
@@ -426,14 +426,12 @@ class Maxwell(object):
             of the electric field seperately.
         """
         # Store values.
-        grad_Ax = np.gradient(self.A[0])
-        grad_Ay = np.gradient(self.A[1])
-        grad_Az = np.gradient(self.A[2])
-
+        grad = np.gradient(self.A)
         # Assign values.
-        Bx = grad_Az[1] - grad_Ay[1]
-        By = grad_Ax[1] - grad_Az[0]
-        Bz = grad_Ay[0] - grad_Ax[0] 
+        Bx = grad[1] - grad[2]
+        By = grad[2] - grad[0]
+        Bz = grad[0] - grad[1]
+        # Return values.
         return (Bx, By, Bz)
 
     def convergence_check(self, arr1, arr2, tol):
@@ -479,6 +477,6 @@ class Maxwell(object):
         vec_data = np.array(vec_data)
         dist_data = np.array(dist_data)
 
-        np.savetxt('maxwell_data/' + str(filenames[1]), pot_data)
-        np.savetxt('maxwell_data/' + str(filenames[2]), vec_data)
-        np.savetxt('maxwell_data/' + str(filenames[3]), dist_data)
+        np.savetxt('maxwell_data/' + str(filenames[0]), pot_data)
+        np.savetxt('maxwell_data/' + str(filenames[1]), vec_data)
+        np.savetxt('maxwell_data/' + str(filenames[2]), dist_data)
