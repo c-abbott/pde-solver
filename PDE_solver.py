@@ -397,7 +397,7 @@ class Maxwell(object):
             Creates current-carrying wire parallel to 
             the z-axis of a cubic lattice.
         """
-        self.A = self.A[:, self.A.shape[1] //2, self.A.shape[2]//2] = 1.0
+        self.A[:, self.A.shape[1]//2, self.A.shape[2]//2] = 1.0
     
     def jacobi_update_mag(self, field):
         """
