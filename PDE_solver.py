@@ -247,15 +247,14 @@ class Poisson(object):
             of a 2D lattice with periodic boundary 
             conditions.
         """
-        i, j = self.pbc(indices)
-        return (math.sqrt((i + self.size[0] // 2)**2 + (j + self.size[1]//2)**2))
+        i, j = indices
+        return (math.sqrt((i - self.size[0] / 2)**2 + (j - self.size[1] / 2)**2))
 
     def collect_data(self, filenames):
         """
             Data collection method for potential contour
             and electric field quiver plots.
         """
-        all_data = []
         pot_data = []
         vec_data = []
         dist_data = []
@@ -265,25 +264,20 @@ class Poisson(object):
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 for k in range(self.size[2]):
-                    all_data.append(
-                        [i, j, k, self.phi[i, j, k], \
-                            Ex[i][j][k], Ey[i][j][k], Ez[i][j][k]])
                     if k == (self.size[2] // 2.0):
                         pot_data.append([i, j, self.phi[i][j][k]])
                         vec_data.append([i, j, Ex[i][j][k], Ey[i][j][k]])
                         dist_data.append([self.calc_radial_dist((i, j)), self.phi[i][j][k], math.sqrt(
                             (Ex[i][j][k])**2+(Ey[i][j][k])**2+(Ez[i][j][k])**2)])
 
-        all_data = np.array(all_data)
         pot_data = np.array(pot_data)
         vec_data = np.array(vec_data)
         dist_data = np.array(dist_data)
 
-        np.savetxt(str(filenames[0]), all_data)
-        np.savetxt(str(filenames[1]), pot_data)
-        np.savetxt(str(filenames[2]), vec_data)
-        np.savetxt(str(filenames[3]), dist_data)
-
+        np.savetxt('poisson_data/' + str(filenames[1]), pot_data)
+        np.savetxt('poisson_data/' + str(filenames[2]), vec_data)
+        np.savetxt('poisson_data/' + str(filenames[3]), dist_data)
+s
 class Poisson2D(object):
     """
         A class to be utitilsed to solve
@@ -359,6 +353,6 @@ class Poisson2D(object):
         """
             File writer.
         """
-        with open(str(filename), "w+") as f:
+        with open('poisson_data/' + str(filename), "w+") as f:
             f.writelines(map("{}, {}\n".format,
                              omegas, sweeps))
