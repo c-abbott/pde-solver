@@ -85,7 +85,7 @@ class CahnHilliard(object):
             Applies periodic boundary conditions (pbc) to a
             2D lattice.
         """
-        return(indices[0] % self.size[0], indices[1] % self.size[1])
+        return (indices[0] % self.size[0], indices[1] % self.size[1])
     
     def run_dynamics(self):
         """
@@ -103,7 +103,7 @@ class CahnHilliard(object):
         #    self.update_cahn_hilliard()
         self.run_dynamics()
         self.image.set_array(self.phi)
-        return self.image,
+        return (self.image,)
     
     def run_animation(self, iterations, it_per_frame):
         """
@@ -179,13 +179,6 @@ class Poisson(object):
                     # Dirchlect BC.
                     else:
                         self.phi[i, j, k] = 0
-    
-    def pbc(self, indices):
-        """
-            Applies periodic boundary conditions (pbc) to a
-            2D lattice.
-        """
-        return(indices[0] % self.size[0], indices[1] % self.size[1])
 
     def jacobi_update(self, field):
         """
@@ -229,7 +222,7 @@ class Poisson(object):
             of the electric field seperately.
         """
         E = np.gradient(self.phi)
-        return -1*np.array(E)[0], -1*np.array(E)[1], -1*np.array(E)[2]
+        return (-1*np.array(E)[0], -1*np.array(E)[1], -1*np.array(E)[2])
     
     def convergence_check(self, arr1, arr2, tol):
         """
@@ -277,7 +270,7 @@ class Poisson(object):
         np.savetxt('poisson_data/' + str(filenames[1]), pot_data)
         np.savetxt('poisson_data/' + str(filenames[2]), vec_data)
         np.savetxt('poisson_data/' + str(filenames[3]), dist_data)
-s
+
 class Poisson2D(object):
     """
         A class to be utitilsed to solve
@@ -356,3 +349,136 @@ class Poisson2D(object):
         with open('poisson_data/' + str(filename), "w+") as f:
             f.writelines(map("{}, {}\n".format,
                              omegas, sweeps))
+
+class Maxwell(object):
+    """
+        A class to be utitilsed to solve
+        one of Maxwell's equations for a static
+        Electric field:
+        Laplacian(A) = -mu*J
+    """
+    def __init__(self, size, dx, dt, mu, A_0):
+        # Simulation parameters.
+        self.size = size
+        self.dx = dx
+        self.dt = dt
+        self.mu = mu
+        self.build_fields_mag(A_0)
+    
+    def build_fields_mag(self, A_0):
+        """
+            Initial construction of scalar fields.
+        """
+        self.A = np.zeros(self.size, dtype=float)
+        self.J = np.zeros(self.size, dtype=float)
+        # Enforce Dirchlect BC on phi.
+        self.enforce_bc(self.A, A_0)
+    
+    def enforce_bc(self, array, A_0):
+        """
+            Method used to enforce Dirchlect BC
+            on cubic lattice.
+        """
+        # Find Boundaries.
+        mask = np.ones(array.shape, dtype=bool)
+        mask[array.ndim * (slice(1, -1),)] = False
+        # Initialise phi with noise.
+        for i in range(self.size[0]):
+            for  j in range(self.size[1]):
+                for k in range(self.size[2]):
+                    if mask[i, j, k] == False:
+                        self.A[i, j, k] = np.random.randint(-10, 11)/100.0 + A_0
+                    # Dirchlect BC.
+                    else:
+                        self.A[i, j, k] = 0
+    
+    def create_current(self):
+        """
+            Creates current-carrying wire parallel to 
+            the z-axis of a cubic lattice.
+        """
+        self.A = self.A[:, self.A.shape[1] //2, self.A.shape[2]//2] = 1.0
+    
+    def jacobi_update_mag(self, field):
+        """
+            Convolutional method to update 
+            a scalar field using Jacobi
+            algorithm.
+        """
+        # 3D kernel.
+        kernel = [[[0.0, 0.0, 0.0],
+                   [0.0, 1.0, 0.0],
+                   [0.0, 0.0, 0.0]],
+
+                  [[0.0, 1.0, 0.0],
+                   [1.0, 0.0, 1.0],
+                   [0.0, 1.0, 0.0]],
+
+                  [[0.0, 0.0, 0.0],
+                   [0.0, 1.0, 0.0],
+                   [0.0, 0.0, 0.0]]]
+        # Return jacobi update.
+        return ((signal.fftconvolve(field, kernel, mode='same') + self.A) / 6.0)
+
+    def get_mag_field(self):
+        """
+            Method returning the x, y, and z components
+            of the electric field seperately.
+        """
+        # Store values.
+        grad_Ax = np.gradient(self.A[0])
+        grad_Ay = np.gradient(self.A[1])
+        grad_Az = np.gradient(self.A[2])
+
+        # Assign values.
+        Bx = grad_Az[1] - grad_Ay[1]
+        By = grad_Ax[1] - grad_Az[0]
+        Bz = grad_Ay[0] - grad_Ax[0] 
+        return (Bx, By, Bz)
+
+    def convergence_check(self, arr1, arr2, tol):
+        """
+            Jacobi algorithm convegence check.
+        """
+        diff = abs(arr2 - arr1)
+        if np.sum(diff, axis=None) <= tol:
+            return True
+        else:
+            return False
+    
+    def calc_radial_dist(self, indices):
+        """
+            Calculates the distance from the centre
+            of a 2D lattice with periodic boundary 
+            conditions.
+        """
+        i, j = indices
+        return (math.sqrt((i - self.size[0] / 2)**2 + (j - self.size[1] / 2)**2))
+    
+    def collect_data(self, filenames):
+        """
+            Data collection method for potential contour
+            and electric field quiver plots.
+        """
+        pot_data = []
+        vec_data = []
+        dist_data = []
+
+        Bx, By, Bz = self.get_mag_field()
+
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                for k in range(self.size[2]):
+                    if k == (self.size[2] // 2):
+                        pot_data.append([i, j, self.A[i][j][k]])
+                        vec_data.append([i, j, Bx[i][j][k], By[i][j][k]])
+                        dist_data.append([self.calc_radial_dist((i, j)), self.A[i][j][k], math.sqrt(
+                            (Bx[i][j][k])**2+(By[i][j][k])**2+(Bz[i][j][k])**2)])
+
+        pot_data = np.array(pot_data)
+        vec_data = np.array(vec_data)
+        dist_data = np.array(dist_data)
+
+        np.savetxt('maxwell_data/' + str(filenames[1]), pot_data)
+        np.savetxt('maxwell_data/' + str(filenames[2]), vec_data)
+        np.savetxt('maxwell_data/' + str(filenames[3]), dist_data)

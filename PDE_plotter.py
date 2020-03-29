@@ -4,6 +4,7 @@ import sys
 from PDE_solver import CahnHilliard
 from PDE_solver import Poisson
 from PDE_solver import Poisson2D
+from PDE_solver import Maxwell
 import time
 
 def main():
@@ -167,4 +168,44 @@ def main():
         # Timer.
         toc = time.perf_counter()
         print("Executed script in {} seconds.".format(toc-tic))
+
+    # Solve Maxwell equation.
+    if sys.argv[1] == 'maxwell':
+        infile_parameters = sys.argv[2]
+        # Open input file and assinging parameters.
+        with open(infile_parameters, "r") as input_file:
+            # Read the lines of the input data file.
+            line = input_file.readline()
+            items = line.split(", ")
+            cubic_size = (int(items[0]), int(items[0]), int(items[0]))
+            dx = float(items[1])        # Spatial discretisation.
+            dt = float(items[2])        # Temporal discretisation.
+            mu = float(items[3])        # Set mu to one.
+            A_0 = float(items[4])       # Initial vector potential.
+            tol = float(items[5])       # Jacobi convegence tolerance.
+
+        # Create Poisson lattice.
+        Lattice = Maxwell(
+            size=cubic_size, dx=dx, dt=dt, mu=mu, A_0=A_0)
+        # Create monopole.
+        Lattice.create_current()
+        # Condition for while loop.
+        converged = False
+        # Timer.
+        tic = time.perf_counter()
+        # Simulation begins.
+        while not converged:
+            # Store previous state.
+            state = np.array(Lattice.A)
+            # Update state.
+            Lattice.A = Lattice.jacobi_update_mag(Lattice.A)
+            # Check for convegence.
+            converged = Lattice.convergence_check(state, Lattice.A, tol)
+        # Collect data.
+        Lattice.collect_data(
+            ['vec_pot_data.txt', 'B_field_data.txt', 'B_dist_data.txt'])
+        # Timer.
+        toc = time.perf_counter()
+        print("Executed script in {} seconds.".format(toc-tic))
+            
 main()

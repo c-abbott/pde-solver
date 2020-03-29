@@ -1,0 +1,2 @@
+100, 1.0, 0.1666666665, 1.0, 0.5, 0.001
+# Lattice Size, dx, dt, Mu, A_0, Tolerance
