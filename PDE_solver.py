@@ -374,13 +374,15 @@ class Maxwell(object):
         Electric field:
         Laplacian(A) = -mu*J
     """
-    def __init__(self, size, dx, dt, mu, A_0):
+    def __init__(self, size, dx, dt, mu, A_0, alg, omega):
         # Simulation parameters.
         self.size = size
         self.dx = dx
         self.dt = dt
         self.mu = mu
         self.build_fields_mag(A_0)
+        self.alg = alg
+        self.omega = omega
     
     def build_fields_mag(self, A_0):
         """

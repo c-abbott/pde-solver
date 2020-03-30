@@ -183,29 +183,32 @@ def main():
             mu = float(items[3])        # Set mu to one.
             A_0 = float(items[4])       # Initial vector potential.
             tol = float(items[5])       # Jacobi convegence tolerance.
+            alg = str(items[6])         # Choice of algorithm.
+            omega = float(items[7])     # SOR optimisation parameter..
 
         # Create Poisson lattice.
         Lattice = Maxwell(
-            size=cubic_size, dx=dx, dt=dt, mu=mu, A_0=A_0)
-        # Create monopole.
-        Lattice.create_current()
-        # Condition for while loop.
-        converged = False
-        # Timer.
-        tic = time.perf_counter()
-        # Simulation begins.
-        while not converged:
-            # Store previous state.
-            state = np.array(Lattice.A)
-            # Update state.
-            Lattice.A = Lattice.jacobi_update_mag(Lattice.A)
-            # Check for convegence.
-            converged = Lattice.convergence_check(state, Lattice.A, tol)
-        # Collect data.
-        Lattice.collect_data(
-            ['vec_pot_data.txt', 'B_field_data.txt', 'B_dist_data.txt'])
-        # Timer.
-        toc = time.perf_counter()
-        print("Executed script in {} seconds.".format(toc-tic))
+            size=cubic_size, dx=dx, dt=dt, mu=mu, A_0=A_0, alg=alg, omega=omega)
+        if Lattice.alg == 'jacobi':
+            # Create monopole.
+            Lattice.create_current()
+            # Condition for while loop.
+            converged = False
+            # Timer.
+            tic = time.perf_counter()
+            # Simulation begins.
+            while not converged:
+                # Store previous state.
+                state = np.array(Lattice.A)
+                # Update state.
+                Lattice.A = Lattice.jacobi_update_mag(Lattice.A)
+                # Check for convegence.
+                converged = Lattice.convergence_check(state, Lattice.A, tol)
+            # Collect data.
+            Lattice.collect_data(
+                ['vec_pot_data.txt', 'B_field_data.txt', 'B_dist_data.txt'])
+            # Timer.
+            toc = time.perf_counter()
+            print("Executed script in {} seconds.".format(toc-tic))
             
 main()
