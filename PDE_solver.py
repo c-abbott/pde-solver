@@ -26,13 +26,10 @@ class CahnHilliard(object):
         """
             Initial construction of scalar phi fields.
         """
-        #self.phi = np.random.rand(
-        #    self.size[0], self.size[1]) * np.random.choice(a=[-1, 1], size=self.size) + phi_0
-
         # This initialisation is better for noise.
         for i in range(self.size[0]):
             for j in range(self.size[1]):
-                self.phi[i, j] = np.random.randint(-10, 11)/100.0 + phi_0
+                self.phi[i, j] = np.random.uniform(-0.01, 0.011) + phi_0
 
     
     def laplacian(self, field):
@@ -99,8 +96,6 @@ class CahnHilliard(object):
             Animate wrapper function for FuncAnimate
             object.
         """
-        #for i in range(self.it_per_frame):
-        #    self.update_cahn_hilliard()
         self.run_dynamics()
         self.image.set_array(self.phi)
         return (self.image,)
@@ -150,9 +145,21 @@ class Poisson(object):
             Initial construction of scalar fields.
         """
         self.phi = np.zeros(self.size, dtype=float)
-        self.rho = np.zeros(self.size, dtype=float)
+        self.construct_phi(phi_0)
         # Enforce Dirchlect BC on phi.
         self.set_boundary(self.phi, phi_0)
+        # Domain for monopole.
+        self.rho = np.zeros(self.size, dtype=float)
+    
+    def construct_phi(self, phi_0):
+        """
+            Initial construction of scalar phi fields.
+        """
+        # This initialisation is better for noise.
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                for k in range(self.size[2]):
+                    self.phi[i][j][k] = np.random.uniform(-0.01, 0.011) + phi_0
 
     def create_monopole(self):
         """
@@ -291,9 +298,19 @@ class Poisson2D(object):
             Initial construction of scalar fields.
         """
         self.phi = np.zeros(self.size, dtype=float)
-        self.rho = np.zeros(self.size, dtype=float)
+        self.construct_phi2D(phi_0)
         # Enforce Dirchlect BC on phi.
         self.set_boundary2D(self.phi, phi_0)
+        # Domain for monopole.
+        self.rho = np.zeros(self.size, dtype=float)
+        
+    def construct_phi2D(self, phi_0):
+        """
+            Initial construction of scalar phi fields.
+        """
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                self.phi[i, j] = np.random.uniform(-0.01, 0.011) + phi_0
     
     def create_monopole_2D(self):
         """
@@ -370,10 +387,21 @@ class Maxwell(object):
             Initial construction of scalar fields.
         """
         self.A = np.zeros(self.size, dtype=float)
-        self.J = np.zeros(self.size, dtype=float)
+        self.construct_A(A_0)
         # Enforce Dirchlect BC on phi.
         self.enforce_bc(self.A, A_0)
+        # Domain for wire.
+        self.J = np.zeros(self.size, dtype=float)
     
+    def construct_A(self, A_0):
+        """
+            Initial construction of scalar phi fields.
+        """
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                for k in range(self.size[2]):
+                    self.A[i][j][k] = np.random.uniform(-1e-7, 1e-7) + A_0
+
     def enforce_bc(self, array, A_0):
         """
             Method used to enforce Dirchlect BC
