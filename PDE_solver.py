@@ -145,21 +145,10 @@ class Poisson(object):
             Initial construction of scalar fields.
         """
         self.phi = np.zeros(self.size, dtype=float)
-        self.construct_phi(phi_0)
         # Enforce Dirchlect BC on phi.
         self.set_boundary(self.phi, phi_0)
         # Domain for monopole.
         self.rho = np.zeros(self.size, dtype=float)
-    
-    def construct_phi(self, phi_0):
-        """
-            Initial construction of scalar phi fields.
-        """
-        # This initialisation is better for noise.
-        for i in range(self.size[0]):
-            for j in range(self.size[1]):
-                for k in range(self.size[2]):
-                    self.phi[i][j][k] = np.random.uniform(-0.01, 0.011) + phi_0
 
     def create_monopole(self):
         """
@@ -208,7 +197,7 @@ class Poisson(object):
         # Return jacobi update.
         return ((signal.fftconvolve(field, kernel, mode='same')  + self.rho)/ 6.0)
 
-    def gs_update_3D(self, field):
+    def gs_update_3D(self):
         """
             3D Gauss-Seidel algorithm with successive
             over relaxation for updating a scalar field. 
@@ -217,11 +206,14 @@ class Poisson(object):
         for i in range(1, self.size[0] - 1):
             for j in range(1, self.size[1] - 1):
                 for k in range(1, self.size[2] - 1):
-                    self.phi[i][j][k] = 1./6. * (self.phi[i+1][j][k] + self.phi[i-1][j][k] + \
-                                                 self.phi[i][j+1][k] + self.phi[i][j-1][k] + \
-                                                 self.phi[i][j][k+1] + self.phi[i][j][k-1] + \
-                                                 self.rho[i][j][k]) * self.omega + (1 - self.omega) * \
-                                                 self.phi[i][j][k]
+                    if (i == 0) or (j == 0) or (k == 0):
+                        self.phi[i][j][k] = 0
+                    else:
+                        self.phi[i][j][k] = 1./6. * (self.phi[i+1][j][k] + self.phi[i-1][j][k] + \
+                                                     self.phi[i][j+1][k] + self.phi[i][j-1][k] + \
+                                                     self.phi[i][j][k+1] + self.phi[i][j][k-1] + \
+                                                     self.rho[i][j][k]) * self.omega + (1 - self.omega) * \
+                                                     self.phi[i][j][k]
 
     def get_elec_field(self):
         """
@@ -236,6 +228,7 @@ class Poisson(object):
             Jacobi algorithm convegence check.
         """ 
         diff = abs(arr2 - arr1)
+        print(np.sum(diff, axis=None))
         if np.sum(diff, axis=None) <= tol:
             return True
         else:
@@ -274,9 +267,9 @@ class Poisson(object):
         vec_data = np.array(vec_data)
         dist_data = np.array(dist_data)
 
-        np.savetxt('poisson_data/' + str(filenames[1]), pot_data)
-        np.savetxt('poisson_data/' + str(filenames[2]), vec_data)
-        np.savetxt('poisson_data/' + str(filenames[3]), dist_data)
+        np.savetxt('poisson_data/' + str(filenames[0]), pot_data)
+        np.savetxt('poisson_data/' + str(filenames[1]), vec_data)
+        np.savetxt('poisson_data/' + str(filenames[2]), dist_data)
 
 class Poisson2D(object):
     """
@@ -298,19 +291,10 @@ class Poisson2D(object):
             Initial construction of scalar fields.
         """
         self.phi = np.zeros(self.size, dtype=float)
-        self.construct_phi2D(phi_0)
         # Enforce Dirchlect BC on phi.
         self.set_boundary2D(self.phi, phi_0)
         # Domain for monopole.
         self.rho = np.zeros(self.size, dtype=float)
-        
-    def construct_phi2D(self, phi_0):
-        """
-            Initial construction of scalar phi fields.
-        """
-        for i in range(self.size[0]):
-            for j in range(self.size[1]):
-                self.phi[i, j] = np.random.uniform(-0.01, 0.011) + phi_0
     
     def create_monopole_2D(self):
         """
@@ -332,11 +316,11 @@ class Poisson2D(object):
             for j in range(self.size[1]):
                 if mask[i, j] == False:
                     self.phi[i, j] = np.random.randint(-10, 11)/100.0 + phi_0
-                    # Dirchlect BC.
+                # Dirchlect BC.
                 else:
                     self.phi[i, j] = 0
     
-    def gs_update_2D(self, field):
+    def gs_update_2D(self):
         """
             2D Gauss-Seidel algorithm with successive
             over relaxation for updating a scalar field. 
@@ -344,10 +328,13 @@ class Poisson2D(object):
         """
         for i in range(1, self.size[0] - 1):
             for j in range(1, self.size[1] - 1):
-                self.phi[i][j] = 1./4. * (self.phi[i+1][j] + self.phi[i-1][j] +
-                                          self.phi[i][j+1] + self.phi[i][j-1] +
-                                          self.rho[i][j]) * self.omega + (1 - self.omega) * \
-                                          self.phi[i][j]
+                if (i == 0) or (j == 0):
+                    self.phi[i][j] = 0
+                else:
+                    self.phi[i][j] = 1./4. * (self.phi[i+1][j] + self.phi[i-1][j] +
+                                              self.phi[i][j+1] + self.phi[i][j-1] +
+                                              self.rho[i][j]) * self.omega + (1 - self.omega) * \
+                                              self.phi[i][j]
 
     def convergence_check2D(self, arr1, arr2, tol):
         """
@@ -389,20 +376,10 @@ class Maxwell(object):
             Initial construction of scalar fields.
         """
         self.A = np.zeros(self.size, dtype=float)
-        self.construct_A(A_0)
         # Enforce Dirchlect BC on phi.
         self.enforce_bc(self.A, A_0)
         # Domain for wire.
         self.J = np.zeros(self.size, dtype=float)
-    
-    def construct_A(self, A_0):
-        """
-            Initial construction of scalar phi fields.
-        """
-        for i in range(self.size[0]):
-            for j in range(self.size[1]):
-                for k in range(self.size[2]):
-                    self.A[i][j][k] = np.random.uniform(-1e-7, 1e-7) + A_0
 
     def enforce_bc(self, array, A_0):
         """
@@ -417,7 +394,7 @@ class Maxwell(object):
             for  j in range(self.size[1]):
                 for k in range(self.size[2]):
                     if mask[i, j, k] == False:
-                        self.A[i, j, k] = np.random.randint(-10, 11)/100.0 + A_0
+                        self.A[i, j, k] = np.random.uniform(-0.01, 0.01) + A_0
                     # Dirchlect BC.
                     else:
                         self.A[i, j, k] = 0
@@ -427,7 +404,9 @@ class Maxwell(object):
             Creates current-carrying wire parallel to 
             the z-axis of a cubic lattice.
         """
-        self.A[:, self.A.shape[1]//2, self.A.shape[2]//2] = 1.0
+        #self.J[:, :, self.J.shape[2]//2] = 1.0
+        for k in range(self.size[2]):
+            self.J[self.size[0]//2][self.size[1]//2][k] = 1.0
     
     def jacobi_update_mag(self, field):
         """
@@ -449,6 +428,24 @@ class Maxwell(object):
                    [0.0, 0.0, 0.0]]]
         # Return jacobi update.
         return ((signal.fftconvolve(field, kernel, mode='same') + self.J) / 6.0)
+    
+    def gs_update_mag(self):
+        """
+            3D Gauss-Seidel algorithm with successive
+            over relaxation for updating a scalar field. 
+            Boundaries not touched as Dirchlect BC in place.
+        """
+        for i in range(1, self.size[0] - 1):
+            for j in range(1, self.size[1] - 1):
+                for k in range(1, self.size[2] - 1):
+                    if (i == 0) or (j == 0) or (k == 0):
+                        self.A[i][j][k] = 0
+                    else:
+                        self.A[i][j][k] = 1./6. * (self.A[i+1][j][k] + self.A[i-1][j][k] + \
+                                                    self.A[i][j+1][k] + self.A[i][j-1][k] + \
+                                                    self.A[i][j][k+1] + self.A[i][j][k-1] + \
+                                                    self.J[i][j][k]) * self.omega + (1 - self.omega) * \
+                                                    self.A[i][j][k]
 
     def get_mag_field(self):
         """
@@ -469,6 +466,7 @@ class Maxwell(object):
             Jacobi algorithm convegence check.
         """
         diff = abs(arr2 - arr1)
+        print (np.sum(diff, axis=None))
         if np.sum(diff, axis=None) <= tol:
             return True
         else:

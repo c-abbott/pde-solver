@@ -54,7 +54,7 @@ def main():
             f.writelines(map("{}, {}\n".format, time_vals, density_vals))
 
     # Generate monopole data.
-    if sys.argv[1] == "monopole":
+    if sys.argv[1] == "poisson":
         infile_parameters = sys.argv[2]
         # Open input file and assinging parameters.
         with open(infile_parameters, "r") as input_file:
@@ -73,6 +73,7 @@ def main():
         # Create Poisson lattice.
         Lattice = Poisson(
             size=cubic_size, dx=dx, dt=dt, eps=eps, phi_0=phi_0, alg=alg, omega=omega)
+
         # Implement Jacobi algorithm.
         if Lattice.alg == 'jacobi':
             # Create monopole.
@@ -108,7 +109,7 @@ def main():
                 # Store previous state.
                 state = np.array(Lattice.phi)
                 # Update state.
-                Lattice.gs_update_3D(Lattice.phi)
+                Lattice.gs_update_3D()
                 # Check for convergence.
                 converged = Lattice.convergence_check(state, Lattice.phi, tol)
             # Collect data
@@ -156,7 +157,7 @@ def main():
                 # Store previous state.
                 state = np.array(Lattice2D.phi)
                 # Update state.
-                Lattice2D.gs_update_2D(Lattice2D.phi)
+                Lattice2D.gs_update_2D()
                 # Update sweeps.
                 sweeps += 1
                 # Check for convergence.
@@ -190,7 +191,7 @@ def main():
         Lattice = Maxwell(
             size=cubic_size, dx=dx, dt=dt, mu=mu, A_0=A_0, alg=alg, omega=omega)
         if Lattice.alg == 'jacobi':
-            # Create monopole.
+            # Create current.
             Lattice.create_current()
             # Condition for while loop.
             converged = False
@@ -210,5 +211,26 @@ def main():
             # Timer.
             toc = time.perf_counter()
             print("Executed script in {} seconds.".format(toc-tic))
-            
+        
+        elif Lattice.alg == 'gs':
+            # Create current.
+            Lattice.create_current()
+            # Condition for while loop.
+            converged = False
+            # Timer.
+            tic = time.perf_counter()
+            # Simulation begins.
+            while not converged:
+                # Store previous state.
+                state = np.array(Lattice.A)
+                # Update state.
+                Lattice.gs_update_mag()
+                # Check for convegence.
+                converged = Lattice.convergence_check(state, Lattice.A, tol)
+            # Collect data.
+            Lattice.collect_data(
+                ['gs_vec_pot_data.txt', 'gs_B_field_data.txt', 'gs_B_dist_data.txt'])
+            # Timer.
+            toc = time.perf_counter()
+            print("Executed script in {} seconds.".format(toc-tic))  
 main()
