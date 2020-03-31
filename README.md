@@ -6,12 +6,8 @@ PDE_solver.py contains 4 classes:
 * Maxwell
 Each of which contains methods to solve the corresponding equations.
 
-Cahn Hilliard
-The Cahn Hilliard equation was solved using the Jacobi algorithm.
-* To run the Cahn-Hilliard animation, type the following into your
-  command line:
-  "python PDE_animator.py phi_0"
-
+Cahn Hilliard \\
+The Cahn Hilliard equation was solved using the Jacobi algorithm. To run the Cahn-Hilliard animation, type the following into your command line: "python PDE_animator.py phi_0" \\
 * phi_0 is an order parameter indicating the presence of either oil or water.
 * phi_0 = 0.0 corresponds to equal oil and water.
 * phi_0 = ±0.5 correspsonds to a simualtion of drops of (+)water/(-)oil    oil/water base.
@@ -21,7 +17,7 @@ The Cahn Hilliard equation was solved using the Jacobi algorithm.
 * 'figures/fed_0.5.png' --> 'ch_data/free_energy_0.5.dat'
 It was found that the simulation took approx. 1e6 update sweeps of the lattice to equilibrate for both phi_0 = 0.0 and phi_0 = 0.5 respectively.
 
-Poisson
+Poisson \\
 The Gauss-Seidel algorithm paried with successive over relaxation was used to solve the Poisson equation for a monopole placed in the centre of (100,100,100) cubic lattice. A tolerance of 0.001 was used as a convergence test.
 
 The corresponding figures and corresponding datafiles are the following:
@@ -32,7 +28,7 @@ The corresponding figures and corresponding datafiles are the following:
 
 Data in plots 'loglog_field.png' and 'loglog_potential.png' were then fitted with a straight line revealing a 1/R, and 1/R**2 (gradient = -1.10813, -2.07811) dependency for the electrostatic potential and electric field repsectively. Details of fitting can be found in the first and third entries to 'fitting.txt'.
 
-Maxwell
+Maxwell \\
 The Gauss-Seidel algorithm paried with successive over relaxation was used to solve Maxwell's fourth equation for a centrally placed wire in a (100,100,100) cubic lattice. A tolerance of 0.001 was used as a convergence test.
 
 The corresponding figures and corresponding datafiles are the following:
