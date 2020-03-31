@@ -39,7 +39,7 @@ The corresponding figures and corresponding datafiles are the following:
 * 'figures/A_contour_100_0.001.png' --> 'maxwell_data/gs_vec_pot_data.txt'
 * 'figures/quiver_B_100_0.001.png' --> 'maxwell_data/gs_B_field_data.txt'
 * 'loglog_b_field.png' --> 'maxwell_data/gs_B_dist_data.txt'
-* 'log_A_dist.png' --> 'poisson_data/gs_B_dist_data.txt'
+* 'log_A_dist.png' --> 'maxwell_data/gs_B_dist_data.txt'
 
 Data in plot 'loglog_b_field.png' was then fitted with a straight line revealing a 1/R dependency (gradient = -1.06177) for the magnetic field repsectively. Details of fitting can be found in the final entry to 'fitting.txt'.
 
