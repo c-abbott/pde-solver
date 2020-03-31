@@ -48,9 +48,9 @@ def main():
             # Evolve time.
             CH_Lattice.update_phi()
         # Plotting.
-        CH_Lattice.plot_fed(time_vals, density_vals)
+        CH_Lattice.plot_fed(time_vals, density_vals, phi_0)
         # Writing to a file.
-        with open("free_energy.dat", "w+") as f:
+        with open("free_energy" + str(phi_0) + ".dat", "w+") as f:
             f.writelines(map("{}, {}\n".format, time_vals, density_vals))
 
     # Generate monopole data.

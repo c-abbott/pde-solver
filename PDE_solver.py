@@ -114,7 +114,7 @@ class CahnHilliard(object):
         plt.colorbar()
         plt.show()
     
-    def plot_fed(self, x_data, y_data):
+    def plot_fed(self, x_data, y_data, phi_0):
         """
             Free energy plotter.
         """
@@ -122,7 +122,7 @@ class CahnHilliard(object):
         plt.ylabel('Free Energy [f]')
         plt.xlabel('Time [sweeps]')
         plt.plot(x_data, y_data, color='tab:orange')
-        plt.savefig('plots/fed_plot.png')
+        plt.savefig('figures/fed_' + str(phi_0) + '.png')
         plt.show()
     
 class Poisson(object):
