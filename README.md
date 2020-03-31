@@ -6,8 +6,8 @@ PDE_solver.py contains 4 classes:
 * Maxwell
 Each of which contains methods to solve the corresponding equations.
 
-Cahn Hilliard \\
-The Cahn Hilliard equation was solved using the Jacobi algorithm. To run the Cahn-Hilliard animation, type the following into your command line: "python PDE_animator.py phi_0" \\
+Cahn Hilliard 
+The Cahn Hilliard equation was solved using the Jacobi algorithm. To run the Cahn-Hilliard animation, type the following into your command line: "python PDE_animator.py phi_0" 
 * phi_0 is an order parameter indicating the presence of either oil or water.
 * phi_0 = 0.0 corresponds to equal oil and water.
 * phi_0 = ±0.5 correspsonds to a simualtion of drops of (+)water/(-)oil    oil/water base.
