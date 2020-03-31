@@ -19,7 +19,7 @@ The Cahn Hilliard equation was solved using the Jacobi algorithm.
 * The free energy density was then plotted versus time for phi_0 = 0.0 and phi_0 = 0.5 respectively. The corresponding plots and files are:
 * 'figures/fed_0.png' --> 'ch_data/free_energy_0.dat'
 * 'figures/fed_0.5.png' --> 'ch_data/free_energy_0.5.dat'
-It was found that the simulation took around _ and _ to equilibrate for phi_0 = 0.0 and phi_0 = 0.5 respectively.
+It was found that the simulation took approx. 1e6 update sweeps of the lattice to equilibrate for both phi_0 = 0.0 and phi_0 = 0.5 respectively.
 
 Poisson
 The Gauss-Seidel algorithm paried with successive over relaxation was used to solve the Poisson equation for a monopole placed in the centre of (100,100,100) cubic lattice. A tolerance of 0.001 was used as a convergence test.
